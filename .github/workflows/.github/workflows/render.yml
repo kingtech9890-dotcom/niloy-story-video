@@ -1,0 +1,45 @@
+name: Render Story Video
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'sagar-notebook-story.zip'
+      - '.github/workflows/render.yml'
+
+jobs:
+  render:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Extract ZIP file
+        run: |
+          unzip -q sagar-notebook-story.zip -d .
+          ls -la story
+
+      - name: Install dependencies
+        working-directory: story
+        run: npm install
+
+      - name: Install Remotion browser
+        working-directory: story
+        run: npx remotion browser ensure
+
+      - name: Render MP4 video
+        working-directory: story
+        run: npm run render
+
+      - name: Upload video
+        uses: actions/upload-artifact@v4
+        with:
+          name: sagar-story-video
+          path: story/out/story.mp4
+          if-no-files-found: error
